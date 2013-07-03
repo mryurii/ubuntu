@@ -1,0 +1,16 @@
+Установка:
+aptitude install ssh
+
+лог-файл:
+/var/log/auth.log
+
+При ошибке: Read from socket failed: Connection reset by peer
+нужно изменить права на использование по ссылке: http://www.howtogeek.com/wiki/Fixing_%22WARNING:_UNPROTECTED_PRIVATE_KEY_FILE!%22_on_Linux
+
+sudo chmod 600 путь_имя-файла (имя файла смотреть по логам)
+
+КОМАНДЫ
+ssh user@host - подключится к host как user
+ssh -p port user@host - подключится к host на порт port как user
+ssh-copy-id user@host - добавить ваш ключ на host для user чтобы 
+			 включить логин без пароля и по ключам

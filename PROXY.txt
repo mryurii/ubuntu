@@ -1,0 +1,58 @@
+PROXY
+
+3proxy
+http://www.3proxy.ru/
+
+настройка:
+http://verhoum.livejournal.com/3488.html
+
+Alt + F2
+gnome-terminal
+mkdir 3proxy
+cd 3proxy
+wget http://3proxy.ru/0.5.3k/3proxy-0.5.3k.tgz
+tar -zxf 3proxy-0.5.3k.tgz
+sudo make -f Makefile.unix
+cd src
+gksudo gedit 3proxy.cfg
+
+========================================
+#auth none
+system "echo 3proxy server runnig Ubuntu"
+# you may use system to execute some external command if proxy starts
+
+# We can configure nservers to avoid unsafe gethostbyname() usage
+nserver 192.168.1.1
+# nscache is good to save speed, traffic and bandwidth
+nscache 65536
+
+rotate 120
+#для того, чтобы в папке с логами сохранялись лишь последние 120 файлов
+
+logformat "L%C - %U [%d/%m/%Y:%H:%m:%S %z] ""%T"" %E %I %O %N/%R:%r"
+log /var/log/3proxy.log D
+
+auth iponly
+allow * 192.168.1.50 * * *
+
+ftppr -p2121
+socks -p1080
+proxy -p3128 -a1
+# -a1 (for proxy) - anonymous proxy (random client information reported)
+admin -p80
+
+========================================
+
+sudo nano /home/user/proxy
+
+========================================
+/home/user/3proxy/src/3proxy /home/user/3proxy/src/3proxy.cfg
+========================================
+
+sudo chmod +x /home/user/proxy
+
+Запуск
+sudo /home/user/proxy
+
+Остановка
+Ctrl + C

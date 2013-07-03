@@ -1,0 +1,546 @@
+http://help.ubuntu.ru/wiki/%D0%BD%D0%B0%D1%81%D1%82%D1%80%D0%BE%D0%B9%D0%BA%D0%B0_%D1%81%D0%B5%D1%82%D0%B8_%D0%B2%D1%80%D1%83%D1%87%D0%BD%D1%83%D1%8E
+
+ifconfig - отображает информацию о всех сетевых устройствах
+ifconfig eth0 - отображает информацию о сетевом устройстве eth0
+
+/etc/network/interfaces
+
+iface eth0 inet static 		# присвоение интерфейсу eth0 статических параметров
+address 192.168.0.1 		# адресс
+netmask 255.255.255.0		 #маска
+gateway 192.168.0.254 		#шлюз
+auto eth0 			#поднимать интерфейс автоматически
+
+
+iface eth0 inet dhcp		#получение настроек карты по dhcp
+auto eth0 			#поднимать интерфейс автоматически
+
+
+для временной настройки (до перезагрузки)Ж
+sudo ifconfig eth0 inet 192.168.0.1 netmask 255.255.255.0 up
+
+ПРОПИСАТЬ DNS
+/etc/resolv.conf
+
+nameserver 192.168.0.100
+nameserver 192.168.0.200
+
+
+Настройка PPPoE соеденения с помощью встроенной утилиты: pppoeconf
+
+$ sudo pon dsl-provider # Для подключения
+или
+$ sudo poff dsl-provider # Для отключения
+
+
+Перезапустите сеть:
+$ sudo /etc/init.d/networking restart
+
+
+Роутинг для IPTV
+
+1. пропишем маршрут в в /etc/ppp/ip-up
+sudo gedit /etc/ppp/ip-up
+
+в самый конец дописываем:
+route add -net 238.0.0.0 netmask 255.255.0.0 dev eth0
+
+2.Отключим в ядре фильтрацию:
+sudo gedit /etc/sysctl.conf
+Выставляем значения
+net.ipv4.conf.all.rp_filter = 0
+net.ipv4.conf.default.rp_filter = 0
+
+3.Применяем
+sudo sysctl -p
+
+4.Перезагружаемся
+
+Wi-Fi
+-----------------------------
+
+Настройка Wi-Fi при помощи wpa-supplicant и /etc/network/interfaces
+
+В этой главе пойдет речь о настройке подключения к существующей Wi-Fi сети с использованием наиболее безопасного на сегодняшний день стандарта шифрования и аутентификации WPA2. Дополнительно приведены примеры настроек для менее безопасных соединений.
+
+Если Вы можете повлиять на настройку точки доступа, например, в случае, если это Ваш домашний Wi-Fi роутер - постарайтесь настроить авторизацию с использованием WPA2, т.к. это наиболее безопасный протокол аутентификации в беспроводных сетях на настоящий момент.
+
+Замечания
+
+Дополнительно к требованиям, указанным выше Вам следует учесть, что:
+
+    После установки всех необходимых пакетов, кабель проводной сети лучше отсоединить.
+    Некоторые устройства (или их драйвера, например Madwifi) не поддерживают WPA2 (AES). Если соединение WPA2 установить не удается, можно попробовать WPA1 (TKIP).
+    Если у Вас RTxxx (Ralink) с драйверами Serialmonkey - этот способ Вам не поможет. Вам следует либо установить пакет ndiswrapper, заменяющий Serialmonkey, либо попробовать другой способ.
+
+Подготовка
+
+Установите пакеты wpa-supplicant и wireless-tools
+Например так:
+
+$ sudo apt-get install wpasupplicant wireless-tools
+
+Теперь убедитесь в том, что Ваше беспроводное устройство (в данном примере это «wlan0») работает и «видит» беспроводные сети. Команда
+
+$ iwconfig
+
+должна выдать примерно такой результат:
+
+ubuntu@ubuntu:~$ iwconfig
+lo        no wireless extensions.
+
+eth0      no wireless extensions.
+
+wmaster0  no wireless extensions.
+
+wlan0     IEEE 802.11bg  ESSID:""  
+          Mode:Managed  Frequency:2.412 GHz  Access Point: Not-Associated   
+          Tx-Power=27 dBm   
+          Retry min limit:7   RTS thr:off   Fragment thr=2352 B   
+          Power Management:off
+          Link Quality:0  Signal level:0  Noise level:0
+          Rx invalid nwid:0  Rx invalid crypt:0  Rx invalid frag:0
+          Tx excessive retries:0  Invalid misc:0   Missed beacon:0
+
+а доступные сети можно посмотреть командой
+
+$ iwlist <имя интерфейса> scan
+
+которая должна выдать примерно такой результат:
+
+ubuntu@ubuntu:~$ iwlist wlan0 scan
+
+wlan0     Scan completed :
+          Cell 01 - Address: 00:00:00:00:00:00
+                    ESSID:"ubuntuessid"
+                    Mode:Master
+                    Channel:8
+                    Frequency:2.447 GHz (Channel 8)
+                    Quality=7/100  Signal level:-99 dBm  Noise level=-104 dBm
+                    Encryption key:on
+                    Bit Rates:1 Mb/s; 2 Mb/s; 5.5 Mb/s; 11 Mb/s; 18 Mb/s
+                              24 Mb/s; 36 Mb/s; 54 Mb/s; 6 Mb/s; 9 Mb/s
+                              12 Mb/s; 48 Mb/s
+                    Extra:tsf=0000001d57e98bf6
+                    Extra: Last beacon: 388ms ago
+
+Настройка
+
+Редактируем /etc/network/interfaces, например так:
+
+$ sudo gedit /etc/network/interfaces
+
+Удаляем (или комментируем) все упоминания нашего беспроводного интерфейса и добавляем свои:
+
+iface wlan0 inet dhcp
+wpa-driver wext
+wpa-ssid <имя_точки_доступа>
+wpa-ap-scan 1
+wpa-proto RSN
+wpa-pairwise CCMP
+wpa-group CCMP
+wpa-key-mgmt WPA-PSK
+wpa-psk <hex_ключ> [ВАЖНО - см. Генерация ключей]
+auto wlan0
+
+Где:
+Параметр 	Описание
+iface wlan0 inet dhcp 	конфигурация для DHCP (для статического IP см. пример ниже)
+«iface wlan0» - Имя нашего интерфейса (wlan0, eth1, rausb0, ra0, итд.)
+wpa-driver 	Это wpa-driver для нашей карты
+('wext' - общий драйвер для linux, работающий с «ndiswrapper»). Рекомендуется оставить как есть.
+Другие варианты:
+hostap = Host AP driver (Intersil Prism2/2.5/3)
+atmel = ATMEL AT76C5XXx (USB, PCMCIA)
+wext = Linux wireless extensions (generic)
+madwifi = Atheros
+wired = wpa_supplicant wired Ethernet driver
+wpa-ssid 	Имя нашей точки доступа (ESSID). Без кавычек.
+wpa-ap-scan 	Параметр вещания точкой доступа ее имени.
+«1» = ESSID вещается всем.
+«2» = ESSID скрыт.
+wpa-proto 	Протокол
+«RSN» = WPA(2)
+«WPA» = WPA(1)
+wpa-pairwise & wpa-group 	«CCMP» = AES-шифрователь (как часть стандарта WPA(2))
+«TKIP» = TKIP-шифрователь (как часть стандарта WPA(1))
+wpa-key-mgmt 	«WPA-PSK» = Аутентификация через ключевую фразу (см. 'Cоздание ключей')
+«WPA-EAP» = Аутентификация при помощи сервера аутентификаций.
+auto wlan0 	Автоматическое включение wlan0 при загрузке/перезагрузке сети.
+Генерация ключей
+
+Теперь нам нужно сконвертировать нашу ключевую фразу (WPA ASCII) в hex-ключ:
+
+$ wpa_passphrase <имя_точки_доступа> <ascii_ключ>
+
+Результат будет примерно таким:
+
+network={
+ssid="test"
+#psk="12345678"
+psk=fe727aa8b64ac9b3f54c72432da14faed933ea511ecab1 5bbc6c52e7522f709a
+}
+
+hex-ключ это все символы после «psk=».
+
+Нужно его скопировать в буфер обмена и вставить в файл /etc/network/interfaces в поле wpa-psk.
+
+Теперь можно сохранить файл и перезагрузить сеть. Должно установиться соединение. Однако иногда этого сразу не происходит. Если это так - перезагружаем машину.
+Дополнительно
+
+Отключаем чтение файла /etc/network/interfaces для others во избежания попадания пароля от сети к третьим лицам.
+
+$ sudo chmod o=-r /etc/network/interfaces
+
+Примеры конфигураций
+
+WPA2 + статический IP, скрытый ESSID.
+
+iface wlan0 inet static
+address 192.168.168.40
+gateway 192.168.168.230
+dns-nameservers 192.168.168.230
+netmask 255.255.255.0
+wpa-driver wext
+wpa-ssid <имя_точки_доступа>
+wpa-ap-scan 2
+wpa-proto RSN
+wpa-pairwise CCMP
+wpa-group CCMP
+wpa-key-mgmt WPA-PSK
+wpa-psk <hex_ключ> [ВАЖНО - см. Генерация ключа]
+auto wlan0
+
+WPA1 + DHCP, ESSID виден всем.
+
+iface wlan0 inet dhcp
+wpa-driver wext
+wpa-ssid <имя_точки_доступа>
+wpa-ap-scan 1
+wpa-proto WPA
+wpa-pairwise TKIP
+wpa-group TKIP
+wpa-key-mgmt WPA-PSK
+wpa-psk <hex_ключ> [ВАЖНО - см. Генерация ключа] 
+auto wlan0
+
+Смешанный режим (WPA1, WPA2) + DHCP, ESSID виден всем.
+
+iface wlan0 inet dhcp
+wpa-driver wext
+wpa-ssid <имя_точки_доступа>
+wpa-ap-scan 1
+wpa-proto WPA RSN
+wpa-pairwise TKIP CCMP
+wpa-group TKIP CCMP
+wpa-key-mgmt WPA-PSK
+wpa-psk <hex_ключ> [ВАЖНО - см. Генерация ключа]
+auto wlan0
+
+LEAP, WEP, DHCP, ESSID виден всем.
+
+iface wlan0 inet dhcp
+wpa-driver wext
+wpa-ssid <имя_точки_доступа>
+wpa-ap-scan 1
+wpa-eap LEAP
+wpa-key-mgmt IEEE8021X
+wpa-identity <имя_пользователя>
+wpa-password <пароль>
+auto wlan0
+
+PEAP, AES, DHCP, ESSID виден всем.
+
+iface wlan0 inet dhcp
+wpa-driver wext
+wpa-ssid <имя_точки_доступа>
+wpa-ap-scan 1
+wpa-proto RSN
+wpa-pairwise CCMP
+wpa-group CCMP
+wpa-eap PEAP
+wpa-key-mgmt WPA-EAP
+wpa-identity <наш_identity>
+wpa-password <пароль>
+auto wlan0
+
+TTLS, WEP, DHCP, ESSID виден всем.
+
+iface wlan0 inet dhcp
+wpa-driver wext
+wpa-ssid <имя_точки_доступа>
+wpa-ap-scan 1
+wpa-eap TTLS
+wpa-key-mgmt IEEE8021X
+wpa-anonymous-identity <anonymous_identity>
+wpa-identity <наш_identity>
+wpa-password <наш_password>
+wpa-phase2 auth=PAP [Также: CHAP, MSCHAP, MSCHAPV2]
+auto wlan0
+
+Другие способы работы Wi-Fi оборудования
+
+При помощи Wi-Fi адаптера также возможно установить децентрализованную сеть ad-hoc или сделать из компьютера под управлением Ubuntu точку доступа. Поскольку описание данных способов Wi-Fi подключения выходит за рамки этого руководства - обратитесь к соответствующим разделам. Ссылки на эти разделы см. в разделе Cсылки.
+Решение проблем
+Не устанавливается соединение по Wi-Fi/Ethernet с точкой доступа/маршрутизатором
+
+Симптомы: сеть обычно изначально работает нормально, долго или недолго, а затем неожиданно пропадает и не появляется после перезагрузки. Эта проблема может быть непостоянной. Сеть «сама собой» начинает работать, а затем пропадает вновь. При перезапуске адаптера сети таким образом:
+
+sudo ifdown wlan0
+sudo ifup wlan0
+
+будет выводиться в консоль похожий текст
+
+Listening on LPF/wlan0/00-02-2A-E1-E0-6C
+Sending on   LPF/wlan0/00-02-2A-E1-E0-6C
+Sending on   Socket/fallback
+DHCPDISCOVER on wlan0 to 255.255.255.255 port 67 interval 8
+DHCPDISCOVER on wlan0 to 255.255.255.255 port 67 interval 8
+DHCPDISCOVER on wlan0 to 255.255.255.255 port 67 interval 15
+No DHCPOFFERS received.
+No working leases in persistent database - sleeping.
+
+Причиной проблемы может быть то, что материнская плата полностью не обесточивается при выключении компьютера. При этом вероятно не обесточивается и некоторое периферийное оборудование, в т.ч. могут не обесточиваться usb порты. Если вы используете, например, Wi-Fi usb-адаптер, то в таком случае можно заметить горящий на адаптере светодиод (если он им оборудован). Вероятно проблема возникает из-за того, что сетевое оборудование в этом режиме работает не совсем корректно.
+
+Простое решение проблемы состоит в выключении компьютера и выдергивании кабеля питания из розетки с последующим подключением шнура питания и включением компьютера.
+
+Сложное решение проблемы состоит в настройке параметров BIOS-а на полное обесточиваение сетевого оборудования при выключении компьютера.
+Иногда наглухо пропадает соединение по Wi-Fi с точкой доступа/маршрутизатором
+
+Симптомы: сеть изначально работает, а затем после перезагрузки точки доступа/маршрутизатора неожиданно пропадает, и не появляется ни после перезагрузки, ни после танцев с бубном. При этом беспроводной адаптер в упор не видит точку доступа (хотя она может стоять рядом с компьютером), но прекрасно видит все соседские сети. Затем после ~дцатой~ перезагрузки маршрутизатора сеть сама собой появляется вновь.
+
+Причиной проблемы может быть то, что некоторые маршрутизаторы произвольно выбирают номер рабочего канала, игнорируя номер канала выбранный в настройках маршрутизатора. Если в файле /etc/network/interfaces номер канала для беспроводного интерфейса указан, то вероятно проблема состоит именно в этом. Номер 6 канала указывается в файле примерно так:
+
+auto wlan0
+...
+wireless-channel 6
+
+Простое решение проблемы состоит в комментировании этого параметра, чтобы адаптер не был ограничен только этим каналом, и перезапуске сети
+
+auto wlan0
+...
+#wireless-channel 6
+
+Сложное решение проблемы состоит в регистрации бага на сайте производителя маршрутизатора (прошивки для него) и обновление прошивки маршрутизатора после (в случае) его исправления.
+Перезапуск сети
+
+Теперь, когда все необходимые действия выполнены, можно перезапустить сеть и проверить соединение. Для этого:
+
+$ sudo /etc/init.d/networking restart
+
+Теперь, при запуске команды ifconfig должно отобразиться подключение eth0 с выставленными параметрами. Если подключение отображается, но параметры не такие, какие были указаны в файле /etc/network/interfaces, либо возникают любые другие ошибки, перепроверьте этот файл на наличие неточностей и опечаток и попробуйте ещё раз перезапустить сеть.
+447 GHz (Channel 8)
+                    Quality=7/100  Signal level:-99 dBm  Noise level=-104 dBm
+                    Encryption key:on
+                    Bit Rates:1 Mb/s; 2 Mb/s; 5.5 Mb/s; 11 Mb/s; 18 Mb/s
+                              24 Mb/s; 36 Mb/s; 54 Mb/s; 6 Mb/s; 9 Mb/s
+                              12 Mb/s; 48 Mb/s
+                    Extra:tsf=0000001d57e98bf6
+                    Extra: Last beacon: 388ms ago
+
+Настройка
+
+Редактируем /etc/network/interfaces, например так:
+
+$ sudo gedit /etc/network/interfaces
+
+Удаляем (или комментируем) все упоминания нашего беспроводного интерфейса и добавляем свои:
+
+iface wlan0 inet dhcp
+wpa-driver wext
+wpa-ssid <имя_точки_доступа>
+wpa-ap-scan 1
+wpa-proto RSN
+wpa-pairwise CCMP
+wpa-group CCMP
+wpa-key-mgmt WPA-PSK
+wpa-psk <hex_ключ> [ВАЖНО - см. Генерация ключей]
+auto wlan0
+
+Где:
+Параметр 	Описание
+iface wlan0 inet dhcp 	конфигурация для DHCP (для статического IP см. пример ниже)
+«iface wlan0» - Имя нашего интерфейса (wlan0, eth1, rausb0, ra0, итд.)
+wpa-driver 	Это wpa-driver для нашей карты
+('wext' - общий драйвер для linux, работающий с «ndiswrapper»). Рекомендуется оставить как есть.
+Другие варианты:
+hostap = Host AP driver (Intersil Prism2/2.5/3)
+atmel = ATMEL AT76C5XXx (USB, PCMCIA)
+wext = Linux wireless extensions (generic)
+madwifi = Atheros
+wired = wpa_supplicant wired Ethernet driver
+wpa-ssid 	Имя нашей точки доступа (ESSID). Без кавычек.
+wpa-ap-scan 	Параметр вещания точкой доступа ее имени.
+«1» = ESSID вещается всем.
+«2» = ESSID скрыт.
+wpa-proto 	Протокол
+«RSN» = WPA(2)
+«WPA» = WPA(1)
+wpa-pairwise & wpa-group 	«CCMP» = AES-шифрователь (как часть стандарта WPA(2))
+«TKIP» = TKIP-шифрователь (как часть стандарта WPA(1))
+wpa-key-mgmt 	«WPA-PSK» = Аутентификация через ключевую фразу (см. 'Cоздание ключей')
+«WPA-EAP» = Аутентификация при помощи сервера аутентификаций.
+auto wlan0 	Автоматическое включение wlan0 при загрузке/перезагрузке сети.
+Генерация ключей
+
+Теперь нам нужно сконвертировать нашу ключевую фразу (WPA ASCII) в hex-ключ:
+
+$ wpa_passphrase <имя_точки_доступа> <ascii_ключ>
+
+Результат будет примерно таким:
+
+network={
+ssid="test"
+#psk="12345678"
+psk=fe727aa8b64ac9b3f54c72432da14faed933ea511ecab1 5bbc6c52e7522f709a
+}
+
+hex-ключ это все символы после «psk=».
+
+Нужно его скопировать в буфер обмена и вставить в файл /etc/network/interfaces в поле wpa-psk.
+
+Теперь можно сохранить файл и перезагрузить сеть. Должно установиться соединение. Однако иногда этого сразу не происходит. Если это так - перезагружаем машину.
+Дополнительно
+
+Отключаем чтение файла /etc/network/interfaces для others во избежания попадания пароля от сети к третьим лицам.
+
+$ sudo chmod o=-r /etc/network/interfaces
+
+Примеры конфигураций
+
+WPA2 + статический IP, скрытый ESSID.
+
+iface wlan0 inet static
+address 192.168.168.40
+gateway 192.168.168.230
+dns-nameservers 192.168.168.230
+netmask 255.255.255.0
+wpa-driver wext
+wpa-ssid <имя_точки_доступа>
+wpa-ap-scan 2
+wpa-proto RSN
+wpa-pairwise CCMP
+wpa-group CCMP
+wpa-key-mgmt WPA-PSK
+wpa-psk <hex_ключ> [ВАЖНО - см. Генерация ключа]
+auto wlan0
+
+WPA1 + DHCP, ESSID виден всем.
+
+iface wlan0 inet dhcp
+wpa-driver wext
+wpa-ssid <имя_точки_доступа>
+wpa-ap-scan 1
+wpa-proto WPA
+wpa-pairwise TKIP
+wpa-group TKIP
+wpa-key-mgmt WPA-PSK
+wpa-psk <hex_ключ> [ВАЖНО - см. Генерация ключа] 
+auto wlan0
+
+Смешанный режим (WPA1, WPA2) + DHCP, ESSID виден всем.
+
+iface wlan0 inet dhcp
+wpa-driver wext
+wpa-ssid <имя_точки_доступа>
+wpa-ap-scan 1
+wpa-proto WPA RSN
+wpa-pairwise TKIP CCMP
+wpa-group TKIP CCMP
+wpa-key-mgmt WPA-PSK
+wpa-psk <hex_ключ> [ВАЖНО - см. Генерация ключа]
+auto wlan0
+
+LEAP, WEP, DHCP, ESSID виден всем.
+
+iface wlan0 inet dhcp
+wpa-driver wext
+wpa-ssid <имя_точки_доступа>
+wpa-ap-scan 1
+wpa-eap LEAP
+wpa-key-mgmt IEEE8021X
+wpa-identity <имя_пользователя>
+wpa-password <пароль>
+auto wlan0
+
+PEAP, AES, DHCP, ESSID виден всем.
+
+iface wlan0 inet dhcp
+wpa-driver wext
+wpa-ssid <имя_точки_доступа>
+wpa-ap-scan 1
+wpa-proto RSN
+wpa-pairwise CCMP
+wpa-group CCMP
+wpa-eap PEAP
+wpa-key-mgmt WPA-EAP
+wpa-identity <наш_identity>
+wpa-password <пароль>
+auto wlan0
+
+TTLS, WEP, DHCP, ESSID виден всем.
+
+iface wlan0 inet dhcp
+wpa-driver wext
+wpa-ssid <имя_точки_доступа>
+wpa-ap-scan 1
+wpa-eap TTLS
+wpa-key-mgmt IEEE8021X
+wpa-anonymous-identity <anonymous_identity>
+wpa-identity <наш_identity>
+wpa-password <наш_password>
+wpa-phase2 auth=PAP [Также: CHAP, MSCHAP, MSCHAPV2]
+auto wlan0
+
+Другие способы работы Wi-Fi оборудования
+
+При помощи Wi-Fi адаптера также возможно установить децентрализованную сеть ad-hoc или сделать из компьютера под управлением Ubuntu точку доступа. Поскольку описание данных способов Wi-Fi подключения выходит за рамки этого руководства - обратитесь к соответствующим разделам. Ссылки на эти разделы см. в разделе Cсылки.
+Решение проблем
+Не устанавливается соединение по Wi-Fi/Ethernet с точкой доступа/маршрутизатором
+
+Симптомы: сеть обычно изначально работает нормально, долго или недолго, а затем неожиданно пропадает и не появляется после перезагрузки. Эта проблема может быть непостоянной. Сеть «сама собой» начинает работать, а затем пропадает вновь. При перезапуске адаптера сети таким образом:
+
+sudo ifdown wlan0
+sudo ifup wlan0
+
+будет выводиться в консоль похожий текст
+
+Listening on LPF/wlan0/00-02-2A-E1-E0-6C
+Sending on   LPF/wlan0/00-02-2A-E1-E0-6C
+Sending on   Socket/fallback
+DHCPDISCOVER on wlan0 to 255.255.255.255 port 67 interval 8
+DHCPDISCOVER on wlan0 to 255.255.255.255 port 67 interval 8
+DHCPDISCOVER on wlan0 to 255.255.255.255 port 67 interval 15
+No DHCPOFFERS received.
+No working leases in persistent database - sleeping.
+
+Причиной проблемы может быть то, что материнская плата полностью не обесточивается при выключении компьютера. При этом вероятно не обесточивается и некоторое периферийное оборудование, в т.ч. могут не обесточиваться usb порты. Если вы используете, например, Wi-Fi usb-адаптер, то в таком случае можно заметить горящий на адаптере светодиод (если он им оборудован). Вероятно проблема возникает из-за того, что сетевое оборудование в этом режиме работает не совсем корректно.
+
+Простое решение проблемы состоит в выключении компьютера и выдергивании кабеля питания из розетки с последующим подключением шнура питания и включением компьютера.
+
+Сложное решение проблемы состоит в настройке параметров BIOS-а на полное обесточиваение сетевого оборудования при выключении компьютера.
+Иногда наглухо пропадает соединение по Wi-Fi с точкой доступа/маршрутизатором
+
+Симптомы: сеть изначально работает, а затем после перезагрузки точки доступа/маршрутизатора неожиданно пропадает, и не появляется ни после перезагрузки, ни после танцев с бубном. При этом беспроводной адаптер в упор не видит точку доступа (хотя она может стоять рядом с компьютером), но прекрасно видит все соседские сети. Затем после ~дцатой~ перезагрузки маршрутизатора сеть сама собой появляется вновь.
+
+Причиной проблемы может быть то, что некоторые маршрутизаторы произвольно выбирают номер рабочего канала, игнорируя номер канала выбранный в настройках маршрутизатора. Если в файле /etc/network/interfaces номер канала для беспроводного интерфейса указан, то вероятно проблема состоит именно в этом. Номер 6 канала указывается в файле примерно так:
+
+auto wlan0
+...
+wireless-channel 6
+
+Простое решение проблемы состоит в комментировании этого параметра, чтобы адаптер не был ограничен только этим каналом, и перезапуске сети
+
+auto wlan0
+...
+#wireless-channel 6
+
+Сложное решение проблемы состоит в регистрации бага на сайте производителя маршрутизатора (прошивки для него) и обновление прошивки маршрутизатора после (в случае) его исправления.
+Перезапуск сети
+
+Теперь, когда все необходимые действия выполнены, можно перезапустить сеть и проверить соединение. Для этого:
+
+$ sudo /etc/init.d/networking restart
+
+Теперь, при запуске команды ifconfig должно отобразиться подключение eth0 с выставленными параметрами. Если подключение отображается, но параметры не такие, какие были указаны в файле /etc/network/interfaces, либо возникают любые другие ошибки, перепроверьте этот файл на наличие неточностей и опечаток и попробуйте ещё раз перезапустить сеть.
+

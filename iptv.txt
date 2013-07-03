@@ -1,0 +1,24 @@
+TANO player
+install on ubuntu
+
+For LTS releases:
+sudo add-apt-repository ppa:ntadej/tano-lts
+or For current Ubuntu releases:
+sudo add-apt-repository ppa:ntadej/tano
+
+ after update
+
+sudo apt-get install tano
+
+sudo apt-get install libvlc-qt0 libvlc-qt0-dbg libvlc-qt-dev
+
+
+Після встановлення НЕОБХІДНО створити файл  з розширенням .m3u (iptv.m3u)
+в якому потрібно створити, хочаб, один символ (!!!)
+
+В налаштуваннях плеєра - перелік відтворення - Перелік відтворення за замовчуванням
+необхідно прописати шлях до створеного вище файлу.
+в Оновити мережу - активувати "Оновити перелік відтворення під час запуску"
+і прописати URL до файлу відтворення в мережі!
+
+from: http://projects.tano.si/ubuntu

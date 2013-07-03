@@ -1,0 +1,226 @@
+Багато різних програм:
+https://launchpad.net/
+http://userbase.kde.org/Welcome_to_KDE_UserBase/uk
+
+GUI for Ubuntu-server
+aptitude install ubuntu-desktop
+
+UBUNTU FireWall
+http://mirspo.narod.ru/firewall.html
+
+Автоматическое монтирование дисков     ИЛИ disk manager
+/etc/fstab		-	файл который нужно изменить
+sudo blkid		-	узнаем UUID дисков
+
+# system was on /dev/sda1 during installation		-	описание
+UUID=DE1C53A21C53750D /media/system   ntfs     defaults            0       0
+(UUID			точка монтирования	параметр монтир.   вкл(невкл. резервн. копиров.) порядок проверки раздела при наличии ошибок)
+
+ПРИМОНТИРОВАТЬ ISO ОБРАЗ
+gmountiso
+
+
+
+УПРАВЛЕНИЕ ЗАГРУЗЧИКОМ GRUB
+
+Grub Customizer - редактирование меню загрузчика GRUB2
+sudo add-apt-repository ppa:danielrichter2007/grub-customizer
+ sudo apt-get update
+ sudo apt-get install grub-customizer
+или https://launchpad.net/~danielrichter2007/+archive/grub-customizer/+packages
+
+УПРАВЛЕНИЕ СКРИНСЕЙВЕРОМ
+чтоб монитор не засыпал во время просмотра видео
+
+Caffeine
+https://launchpad.net/~caffeine-developers/+archive/ppa
+
+sudo add-apt-repository ppa:caffeine-developers/ppa
+ sudo apt-get update
+ sudo apt-get install caffeine
+
+восстановить GRUB2
+sudo fdisk -l			- определяем на каком диске установлена система
+sudo mount /dev/sdXY /mnt	- монтируем диск X диск в системе, Y раздел на диске
+sudo grub-install --root-directory=/mnt/ /dev/sdX	- установим grub
+				- перезагружаемся
+sudo update-grub		- обновляем grub
+
+
+Сетевые параметры
+gadmin-samba - граф. интерфейс SAMBA SERVER
+SADMS (Samba as Active Directory Member Station)(http://sadms.objectif-libre.com/)
+SAMBA		-	поддержка сетей windows
+Webmin - (http://www.webmin.com/) - руководство http://break-people.ru/cmsmade/index.php?page=unix_webmin_howto
+SAMS - (SQUID Account Management System) - управление SQUID
+Ajenti (http://ajenti.org/)
+Zentyal - пакет серверного ПО (http://www.zentyal.org/)
+
+
+PROXY
+3proxy - маленький и удобный прокси-сервер (http://www.3proxy.ru/)
+
+Регулятор громкости
+Volti (скачть http://code.google.com/p/volti/downloads/list)
+
+КОДЕКИ
+ubuntu-restricted-extras
+АРХИВАТОРЫ
+sudo aptitude install rar unrar p7zip-full
+_________________________________________________
+Просмотр *.txt
+kate
+
+_________________________________________________
+Аудио
+qmmp
+Видео
+SMPlayer
+OpenMeetings - сервер видеоконференций (http://code.google.com/p/openmeetings/ )()
+Редактор аудио файлов
+Audacity
+Редактор аудио настроек
+ALSA (GNOME ALSA mixer)
+easytag - редактор тэгов в аудиофайлах
+_________________________________________________
+Интернет
+Бит-торрент
+Deluge
+FTP
+FileZilla
+Почта
+KMail
+ВЕБ-камера
+guvcview		-	?????????????????????????????????????????????????
+Удаленный доступ
+Remmina — клієнт віддаленого підключення до робочого столу, що може відображати та контролювати сеанс віддаленого робочого столу.
+PDF
+sudo aptitude install acroread  #Adobe reader
+_________________________________________________
+CD/DVD
+Gnomebaker
+_________________________________________________
+UBUNTU TWEAK
+sudo add-apt-repository ppa:tualatrix/ppa
+sudo apt-get update
+sudo apt-get install ubuntu-tweak
+_________________________________________________
+СОВЕТЫ:
+-Скрыть файлы в Nautilus
+Чтобы скрыть файлы в Nautilus в Ubuntu нам нужно в той директории, в которой мы хотим это сделать, создать обычный пустой файл .hidden и в него занести имена файлов или директорий, которые нужно скрыть
+-установить rpm пакет можно
+apt-get install alien
+alien -k name-of-rpm-file.rpm  (или alien name-of-rpm-file.rpm при этом создастся копия файла только .deb дальше запустить посредством УБУНТЫ)
+-убрать с панели логин
+apt-get remove indicator-me
+-убрать с панели конверт
+apt-get remove indicator-messages
+-Wi-Fi
+lspci -выводит все PCI устройства
+iwconfig - определяет какому сетевому устройству соответствует Wi-Fi (если не определило, то нужно искать драйвера названию устройства из lspci)
+
+
+
+_________________________________________________
+PHP
+Apache
+sudo apt-get install apache2
+sudo apt-get install php5			Установка PHP модулей
+sudo invoke-rc.d apache2 start			Для запуска сервера
+sudo invoke-rc.d apache2 restart		перезапускаем сервер
+sudo invoke-rc.d apache2 stop			для остановки сервера
+
+MySQL
+sudo apt-get install mysql-server
+sudo mysqladmin -u root password новый_пароль_к_серверу  Теперь изменим пароль root к серверу БД
+
+_________________________________________________
+Права доступа:
+r - чтение, w - запись, x - исполнение
+chmod u+rwx,g+rwx,o+x trurl.py
+–x 1,-w- 2,-wx 3, r– 4, r-x 5, rw- 6, rwx 7  числовое представление
+
+
+Желательно доустановить:
+aptitude install firefox-locale-uk thunderbird-locale-uk kate qmmp audacity smplayer filezila remmina
+
+Если в SKYPE нет видео
+нужно создать ярлык с командой
+env LD_PRELOAD=/usr/lib/i386-linux-gnu/libv4l/v4l1compat.so skype
+
+
+??????????
+Ethernet controller: National Semiconductor Corporation DP83815 (MacPhyter) Ethernet Controller
+_________________________________________________
+Не видит Wi-Fi
+Broadcom Corporation BCM4311 802.11b/g WLAN
+помогло:
+aptitude install firmware-b43-installer
+после установки само скачало драйвера (firmware)
+_________________________________________________
+Процессы
+
+Для отображения списка процессов для всех пользователей
+ps aux
+pstree отображает дерево процессов
+ps -u user для отображения процессов пользователя user
+ps ax | grep 'ищем процесс по куску имени'
+
+_________________________________________________
+Сложность пароля
+
+После установки Webmin файл
+/etc/security/pwquality.conf
+отвечает за сложность пароля
+__________________________________________________
+JAVA в Firefox
+
+если не отображает JAVA в браузере нужно
+1. убедиться что JAVA установлена в системе (java -version)
+если не усатновлена, то на сайте java.com скачиваем *.rpm --> с помощью alien делаем из него *.deb и устанавливаем.
+2. создать директорию ~/.firefox/plugin
+и
+ln -s /usr/java/jre1.7.0_11/lib/i386/libjavaplugin_jni.so ~/.mozilla/plugins/
+ln -s /usr/java/jre1.7.0_11/lib/i386/libnpjp2.so ~/.mozilla/plugins/
+
+__________________________________________________
+User&Password
+
+adduser User_name - добавляет пользователя User_name, после вводиться пароль и дополнительная инфо...
+
+passwd User_name - изменяет пароль пользователя User_name
+
+__________________________________________________
+Driver Canon MF...
+
+https://launchpad.net/~auanswers/+archive/canon64
+
+How to install:
+    Important: you must first install the libxml2:i386 package (which pulls in the 32-bit libc6 and zlib packages which are also needed). This manual step is necessary because the alternative is to force people to install the 250 MB+ ia32-libs package.
+    Start by opening a terminal and typing:
+
+    sudo apt-get install libxml2:i386
+
+    Add the PPA with:
+
+    sudo apt-add-repository ppa:auanswers/canon64
+
+    Update with sudo apt-get update
+    Install the North American version:
+
+    sudo apt-get install cndrvcups-ufr2-us
+
+    or the European version
+
+    sudo apt-get install cndrvcups-ufr2-uk
+
+    Make sure your printer's device in Settings...Printing is the cnusb: device:
+
+_________________________________________________
+
+Create Bootable USB_Drive with Windows
+
+sudo add-apt-repository ppa:colingille/freshlight
+sudo apt-get update
+sudo apt-get install winusb
+_________________________________________________

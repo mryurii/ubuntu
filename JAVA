@@ -1,0 +1,143 @@
+sudo apt-get update
+apt-cache search java | awk '{print($1)}' | grep -E -e '^(ia32-)?(sun|oracle)-java' -e '^openjdk-' -e '^icedtea' -e '^(default|gcj)-j(re|dk)' -e '^gcj-(.*)-j(re|dk)' -e 'java-common' | xargs sudo apt-get -y remove
+sudo apt-get -y autoremove
+
+
+install java 32
+sudo apt-get remove firefox openjdk-6-jdk icedtea-6-plugin
+sudo apt-get install firefox:i386 openjdk-6-jdk:i386 icedtea-6-plugin:i386
+############################################################################
+
+http://www.webupd8.org/2011/09/how-to-install-oracle-java-7-jdk-in.html
+
+How To Install Oracle Java 7 (JDK) In Ubuntu
+		
+
+*********Install Oracle Java JDK 7 in Ubuntu
+
+Update: Oracle JDK 7 is now available in a PPA for Ubuntu users 
+(the files are not distributed in the PPA, instead, the .deb 
+automatically downloads and installs Oracle JDK). 
+If you prefer the PPA way (which also provides automatic updates) 
+instead of manually installing it, see: Install Oracle Java 7 in Ubuntu via PPA Repository
+http://www.webupd8.org/2012/01/install-oracle-java-jdk-7-in-ubuntu-via.html
+
+Warning: JDK 7 is available as a developer preview release, so use it at your own risk.
+
+
+For the installation we'll be using an old script created by WebUpd8 reader Bruce Ingalls which I've 
+updated to work with the latest Oracle JDK 7 (just a minor modification). The installation instructions 
+below only work for Oracle JDK.
+
+Let's begin!
+_________________________________
+
+1. Download the latest Oracle JDK 7 from HERE (you must click "accept license" 
+and then download the .tar.gz package for your computer 
+architecture - jdk-7-linux-i586.tar.gz or jdk-7-linux-x64.tar.gz; 
+these filenames are just examples, they will change on future releases). 
+You can use these instructions for older JDK versions too, but make sure 
+you use the appropriate folder names, etc.
+
+
+2. Extract the downloaded Oracle Java JDK archive in your home folder 
+and rename the newly created folder to "java-7-oracle" - we must move this 
+folder to /usr/lib/jvm using the following commands:
+
+cd
+sudo mkdir -p  /usr/lib/jvm/ #just in case
+sudo mv java-7-oracle/ /usr/lib/jvm/
+
+
+3. Install Update Java package created by Bruce Ingalls (packages available for 
+Ubuntu 11.10, 11.04, 10.10 and 10.04):
+
+sudo add-apt-repository ppa:nilarimogard/webupd8
+sudo apt-get update
+sudo apt-get install update-java
+
+
+If you don't want to add the WebUpd8 PPA, you can also manually download the script.
+(http://webupd8.googlecode.com/files/update-java-0.5b)
+The script may work with other Linux distributions, but it has only been tested on Ubuntu.
+
+
+4. Now run the following command in a terminal to install Oracle Java JDK:
+
+sudo update-java
+
+
+The script will ask you to select the Java version - select "java-7-oracle" for Oracle Java JDK 7, 
+click OK and wait for it to finish:
+
+Java Updater
+
+
+After a few minutes, Oracle Java JDK should be successfully installed on your Ubuntu machine. 
+You can check out the version by running these commands in a terminal:
+
+java -version
+javac -version
+
+The version should be "1.7.0".
+
+Install Oracle Java 7 Browser plugin
+
+The Java browser plugin should be installed automatically. But in case it doesn't show up in 
+your browser, here's what to do.
+
+
+Even though the steps below are for Firefox, the plugin will also be updated in Chrome 
+(possibly other browsers too) as it looks under ~/.mozilla/plugins folder for plugins too.
+
+Firstly, remove old Java plugin links using the commands below:
+
+rm -f ~/.mozilla/plugins/libnpjp2.so ~/.mozilla/plugins/libjavaplugin_oji.so
+sudo rm -f /usr/lib/firefox/plugins/libnpjp2.so /usr/lib/firefox/plugins/libjavaplugin_oji.so
+
+
+And for the last step, let's create a simbolic link for the newly installed Java into the Mozilla 
+plugins directory:
+_____________________________________
+- 32bit:
+
+mkdir -p ~/.mozilla/plugins
+ln -s /usr/lib/jvm/java-7-oracle/jre/lib/i386/libnpjp2.so ~/.mozilla/plugins/
+_____________________________________
+- 64bit:
+
+mkdir -p ~/.mozilla/plugins
+ln -s /usr/lib/jvm/java-7-oracle/jre/lib/amd64/libnpjp2.so ~/.mozilla/plugins/
+
+
+Reverting the changes
+
+Update 15 December, 2011: Sun Java is no longer available in the older Ubuntu repositories either 
+so the only alternative is to install OpenJDK instead:
+
+sudo apt-get install openjdk-6-jdk icedtea-plugin
+
+
+Now run our script:
+
+sudo update-java
+
+
+And select the "java-6-sun-1.6.0.26" ("java-6-sun" works too) for Oracle JDK or the "java-1.6.0-openjdk" 
+folder for OpenJDK.
+
+
+Let's revert the browser plugin changes too:
+
+rm -f ~/.mozilla/plugins/libnpjp2.so
+
+_____________________________________
+32bit:
+
+sudo ln -s /usr/lib/jvm/java-6-sun-1.6.0.26/jre/lib/i386/libnpjp2.so ~/.mozilla/plugins/
+
+_____________________________________
+64bit:
+
+sudo ln -s /usr/lib/jvm/java-6-sun-1.6.0.26/jre/lib/amd64/libnpjp2.so ~/.mozilla/plugins/
+
