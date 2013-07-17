@@ -1,28 +1,33 @@
 SubLime Text 2
 
-sudo add-apt-repository ppa:webupd8team/sublime-text-2
-sudo apt-get update
-sudo apt-get install sublime-text
+	sudo add-apt-repository ppa:webupd8team/sublime-text-2
+	sudo apt-get update
+	sudo apt-get install sublime-text
 
+Add Package Control
+
+  ctrl+`
+
+  import urllib2,os; pf='Package Control.sublime-package'; ipp=sublime.installed_packages_path(); os.makedirs(ipp) if not os.path.exists(ipp) else None; urllib2.install_opener(urllib2.build_opener(urllib2.ProxyHandler())); open(os.path.join(ipp,pf),'wb').write(urllib2.urlopen('http://sublime.wbond.net/'+pf.replace(' ','%20')).read()); print('Please restart Sublime Text to finish installation')
 
 cd /usr/lib/sublime-text-2
 
-sudo ghex sublime_text
+  sudo ghex sublime_text
 
-ctrl+H ->  replace '33 42' to '32 42'
+  ctrl+H ->  replace '33 42' to '32 42'
 
 Use Key:
 
------BEGIN LICENSE-----
-Patrick Carey
-Unlimited User License
-EA7E-18848
-4982D83B6313800EBD801600D7E3CC13
-F2CD59825E2B4C4A18490C5815DF68D6
-A5EFCC8698CFE589E105EA829C5273C0
-C5744F0857FAD2169C88620898C3845A
-1F4521CFC160EEC7A9B382DE605C2E6D
-DE84CD0160666D30AA8A0C5492D90BB2
-75DEFB9FD0275389F74A59BB0CA2B4EF
-EA91E646C7F2A688276BCF18E971E372
------END LICENSE-----
+	-----BEGIN LICENSE-----
+	Patrick Carey
+	Unlimited User License
+	EA7E-18848
+	4982D83B6313800EBD801600D7E3CC13
+	F2CD59825E2B4C4A18490C5815DF68D6
+	A5EFCC8698CFE589E105EA829C5273C0
+	C5744F0857FAD2169C88620898C3845A
+	1F4521CFC160EEC7A9B382DE605C2E6D
+	DE84CD0160666D30AA8A0C5492D90BB2
+	75DEFB9FD0275389F74A59BB0CA2B4EF
+	EA91E646C7F2A688276BCF18E971E372
+	-----END LICENSE-----
