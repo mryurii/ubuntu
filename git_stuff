@@ -1,0 +1,2 @@
+# remove all baranch except master
+git checkout master && git branch | grep -v "master" | xargs git branch -D
