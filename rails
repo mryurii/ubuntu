@@ -9,3 +9,6 @@ config.generators do |g|
   g.helper false
   g.assets false
 end
+
+# OR
+rails generate controller home index  --no-helper --no-assets --no-controller-specs --no-view-specs
