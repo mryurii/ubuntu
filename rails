@@ -1,3 +1,11 @@
 # to find where my_method has been defined
 MyClass.method(:my_method).source_location
  
+# if you not need generate helpers, tests, assets
+# application.rb
+config.generators do |g|
+  g.view_specs false
+  g.helper_specs false
+  g.helper false
+  g.assets false
+end
