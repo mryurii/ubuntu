@@ -1,0 +1,20 @@
+# routes
+
+'use strict';
+
+angular.module('ActiveAccounting').config([
+  '$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
+    $routeProvider
+      .when('/home', {
+        templateUrl: '<%= asset_path('angular/registers/index.html') %>'
+      })
+      .when('/articles', {
+        templateUrl: '<%= asset_path('angular/articles/index.html') %>',
+        controller: 'ArticlesCtrl'
+      })
+      .otherwise({ redirectTo: '/home' });
+  }
+]).config(["$httpProvider", function($httpProvider) {
+    $httpProvider.defaults.headers.common['X-CSRF-Token'] = $('meta[name=csrf-token]').attr('content')
+  }
+])
