@@ -12,3 +12,6 @@ end
 
 # OR
 rails generate controller home index  --no-helper --no-assets --no-controller-specs --no-view-specs
+
+# rollback migration
+rake db:migrate:down VERSION=20100905201547
