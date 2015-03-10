@@ -15,3 +15,5 @@ rails generate controller home index  --no-helper --no-assets --no-controller-sp
 
 # rollback migration
 rake db:migrate:down VERSION=20100905201547
+
+# localserver ngrok
